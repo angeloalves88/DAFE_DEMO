@@ -6,9 +6,26 @@ from selenium.webdriver.chrome.options import Options as ChromeOptions
 import os
 import sys
 import time
+import socket
+from urllib.parse import urlparse
 
 # URL do Selenium Grid Hub - usa variável de ambiente se disponível, senão usa padrão
 SELENIUM_GRID_URL = os.getenv("SELENIUM_GRID_URL", "http://localhost:4444/wd/hub")
+
+def check_host_resolution(url):
+    """Verifica se o hostname da URL pode ser resolvido"""
+    try:
+        parsed = urlparse(url)
+        hostname = parsed.hostname
+        if not hostname:
+            return False, "Hostname não encontrado na URL"
+        socket.gethostbyname(hostname)
+        return True, None
+    except socket.gaierror as e:
+        hostname = parsed.hostname if 'parsed' in locals() else 'desconhecido'
+        return False, f"Não foi possível resolver o hostname '{hostname}': {str(e)}"
+    except Exception as e:
+        return False, f"Erro ao verificar hostname: {str(e)}"
 
 # Caminho local do HTML
 HTML_PATH = "https://dafetech.com.br/DEMO/form.html"  # <-- altere para seu arquivo
@@ -51,6 +68,35 @@ def main():
     chrome_options = get_chrome_options()
     
     try:
+        # Verificando resolução do hostname antes de tentar conectar
+        print(f"Verificando conectividade com {SELENIUM_GRID_URL}...")
+        can_resolve, error_msg = check_host_resolution(SELENIUM_GRID_URL)
+        
+        if not can_resolve:
+            print(f"\n❌ ERRO DE CONECTIVIDADE:")
+            print(f"   {error_msg}")
+            print(f"\n💡 POSSÍVEIS SOLUÇÕES:")
+            parsed = urlparse(SELENIUM_GRID_URL)
+            hostname = parsed.hostname
+            
+            if hostname == "selenium-hub":
+                print(f"   1. Verifique se o serviço 'selenium-hub' está rodando")
+                print(f"   2. Se estiver usando Docker Compose, verifique se os containers estão na mesma rede")
+                print(f"   3. Se estiver usando Docker, verifique se o container está na mesma network")
+                print(f"   4. Tente usar 'localhost' ou o IP do host se estiver rodando localmente")
+                print(f"   5. Verifique a variável de ambiente SELENIUM_GRID_URL:")
+                print(f"      Valor atual: {SELENIUM_GRID_URL}")
+                print(f"      Para usar localhost: export SELENIUM_GRID_URL=http://localhost:4444/wd/hub")
+            else:
+                print(f"   1. Verifique se o hostname '{hostname}' está correto")
+                print(f"   2. Verifique se o serviço Selenium Grid está rodando")
+                print(f"   3. Verifique conectividade de rede/DNS")
+                print(f"   4. Valor atual da URL: {SELENIUM_GRID_URL}")
+            
+            raise ConnectionError(f"Não foi possível resolver o hostname: {error_msg}")
+        
+        print("✓ Hostname resolvido com sucesso")
+        
         # Conectando ao Selenium Grid
         print(f"Conectando ao Selenium Grid em {SELENIUM_GRID_URL}...")
         driver = webdriver.Remote(
