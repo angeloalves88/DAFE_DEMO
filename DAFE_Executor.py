@@ -47,7 +47,7 @@ def get_chrome_options():
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--disable-gpu")
-        print("✓ Ambiente Docker detectado - opções de container aplicadas")
+        print(" Ambiente Docker detectado - opções de container aplicadas")
     
     # Opções recomendadas para ambos os ambientes
     chrome_options.add_argument("--start-maximized")
@@ -73,9 +73,9 @@ def main():
         can_resolve, error_msg = check_host_resolution(SELENIUM_GRID_URL)
         
         if not can_resolve:
-            print(f"\n❌ ERRO DE CONECTIVIDADE:")
+            print(f"\n ERRO DE CONECTIVIDADE:")
             print(f"   {error_msg}")
-            print(f"\n💡 POSSÍVEIS SOLUÇÕES:")
+            print(f"\n POSSÍVEIS SOLUÇÕES:")
             parsed = urlparse(SELENIUM_GRID_URL)
             hostname = parsed.hostname
             
@@ -95,7 +95,7 @@ def main():
             
             raise ConnectionError(f"Não foi possível resolver o hostname: {error_msg}")
         
-        print("✓ Hostname resolvido com sucesso")
+        print(" Hostname resolvido com sucesso")
         
         # Conectando ao Selenium Grid
         print(f"Conectando ao Selenium Grid em {SELENIUM_GRID_URL}...")
@@ -103,7 +103,7 @@ def main():
             command_executor=SELENIUM_GRID_URL,
             options=chrome_options
         )
-        print("✓ Conexão estabelecida com sucesso!\n")
+        print(" Conexão estabelecida com sucesso!\n")
         
         # Maximizar janela (fallback se --start-maximized não funcionar)
         try:
@@ -118,7 +118,7 @@ def main():
         # Espera o formulário carregar
         print("Aguardando formulário carregar...")
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "formCadastro")))
-        print("✓ Formulário carregado\n")
+        print(" Formulário carregado\n")
 
         # Preenchendo os campos
         print("Preenchendo campos do formulário...")
@@ -135,18 +135,18 @@ def main():
         # Clicar no botão enviar
         print("Enviando formulário...")
         driver.find_element(By.ID, "btnEnviar").click()
-        print("✓ Formulário enviado com sucesso!\n")
+        print(" Formulário enviado com sucesso!\n")
 
         time.sleep(3)
 
     except Exception as e:
-        print(f"\n❌ Erro durante execução: {str(e)}")
+        print(f"\n Erro durante execução: {str(e)}")
         raise
     finally:
         if 'driver' in locals():
             print("Encerrando driver...")
             driver.quit()
-            print("✓ Driver encerrado")
+            print(" Driver encerrado")
 
 if __name__ == "__main__":
     main()
